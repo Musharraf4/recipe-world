@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -10,9 +12,8 @@ app.use(cors());
 
 app.use("/auth", userRouter);
 app.use("/recipes", recipesRouter);
-
-mongoose.connect(
-  "mongodb+srv://musharraf:eGrwG0lPpFJkUZpr@firstcluster.sjfixep.mongodb.net/recipes?retryWrites=true&w=majority",
-  { useNewUrlParser: true, useUnifiedTopology: true }
-);
+mongoose.connect(`mongodb+srv://${process.env.MONGODB_URL}/recipes?retryWrites=true&w=majority`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 app.listen(3001, () => console.log("server runs"));

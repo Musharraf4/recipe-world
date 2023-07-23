@@ -1,4 +1,8 @@
+import axios from "axios";
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+
+import { useNavigate } from "react-router-dom";
 
 export const Auth = () => {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
@@ -16,9 +20,21 @@ export const Auth = () => {
 export const Login = ({ showRegisterForm, setShowRegisterForm }: any) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const submitHandler = (event: any) => {
-    event.preventDefault();
-    console.log(username);
+  const navigate = useNavigate();
+  const [_, setCookies] = useCookies(["access_token"]);
+  const submitHandler = async (e: any) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:3001/auth/login", {
+        username,
+        password,
+      });
+      setCookies("access_token", response?.data?.token);
+      window.localStorage.setItem("userID", response?.data?.userID);
+      navigate("/");
+    } catch (error) {
+      alert(error);
+    }
   };
   return (
     <AuthUI
@@ -37,9 +53,14 @@ export const Login = ({ showRegisterForm, setShowRegisterForm }: any) => {
 export const Register = ({ showRegisterForm, setShowRegisterForm }: any) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const submitHandler = (event: any) => {
-    event.preventDefault();
-    console.log(username);
+  const submitHandler = async (e: any) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:3001/auth/register", { username, password });
+      alert("User added Successfully");
+    } catch (error) {
+      alert(error);
+    }
   };
   return (
     <AuthUI
@@ -74,7 +95,7 @@ export const AuthUI = ({
           </a>
         </div>
         <div className="w-full px-6 py-4 mt-6 overflow-hidden bg-white shadow-md sm:max-w-lg sm:rounded-lg">
-          <form>
+          <form onSubmit={submitHandler}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 undefined">
                 Username
@@ -83,8 +104,9 @@ export const AuthUI = ({
                 <input
                   type="text"
                   name="username"
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  className="block w-full mt-1 py-2 border-blue-900 rounded-md shadow-sm  focus:outline-none focus:border-none"
                   value={username}
+                  required
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
@@ -99,9 +121,9 @@ export const AuthUI = ({
               </label>
               <div className="flex flex-col items-start">
                 <input
-                  type="password"
+                  required
                   name="password"
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm  focus:outline-none"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -111,8 +133,7 @@ export const AuthUI = ({
             <div className="flex items-center mt-4">
               <button
                 type="submit"
-                onSubmit={submitHandler}
-                className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-500 transform bg-[#DAB600] rounded-md hover:bg-[#e9d700] focus:outline-none focus:bg-purple-600"
+                className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-500 transform bg-[#DAB600] rounded-md hover:bg-[#e9d700] focus:outline-none focus:bg-[#e9d700]"
               >
                 {!showRegisterForm ? "Register" : "Login"}
               </button>
